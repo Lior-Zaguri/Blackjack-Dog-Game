@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BlackJack Game</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-shadow: 2px 2px 4px black;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+
+    #gameOverScreen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      text-align: center;
+      padding: 40px;
+      border-radius: 20px;
+      font-family: Arial, sans-serif;
+      z-index: 10;
+    }
+
+    #gameOverScreen button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: crimson;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="content" id="menu">
+    <h1>Welcome to BlackJack Game!</h1>
+    <p>Press start to help him catch his balls!</p>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+
+  <div id="gameOverScreen" style="display: none;">
+    <h1>Game Over</h1>
+    <p>Too bad... Yellow balls only!</p>
+    <button onclick="restartGame()">Try again!</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const dogWidth = 100;
+    const dogHeight = 100;
+    let dogX = 100;
+    let dogY = 0;
+
+    const dogImage = new Image();
+    dogImage.src = 'dog.png';
+
+    const bgImage = new Image();
+    bgImage.src = 'background.png';
+
+    const ballImage = new Image();
+    ballImage.src = 'tennisball.png';
+
+    const blackBallImage = new Image();
+    blackBallImage.src = 'blackball.png';
+
+    let ballX = 200;
+    let ballY = -50;
+    let ballSpeed = 2;
+    const ballSize = 30;
+
+    let blackX = 300;
+    let blackY = -50;
+    let blackSpeed = 2;
+    const blackSize = 30;
+
+    let gameOver = false;
+    let score = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      dogY = canvas.height - dogHeight - 100;
+    }
+
+    function resetBall() {
+      ballX = Math.random() * (canvas.width - ballSize);
+      ballY = -ballSize;
+    }
+
+    function resetBlackBall() {
+      blackX = Math.random() * (canvas.width - blackSize);
+      blackY = -blackSize;
+    }
+
+    function checkCollision() {
+      return (
+        ballX < dogX + dogWidth &&
+        ballX + ballSize > dogX &&
+        ballY < dogY + dogHeight &&
+        ballY + ballSize > dogY
+      );
+    }
+
+    function checkBlackCollision() {
+      return (
+        blackX < dogX + dogWidth &&
+        blackX + blackSize > dogX &&
+        blackY < dogY + dogHeight &&
+        blackY + blackSize > dogY
+      );
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(dogImage, dogX, dogY, dogWidth, dogHeight);
+      ctx.drawImage(ballImage, ballX, ballY, ballSize, ballSize);
+      ctx.drawImage(blackBallImage, blackX, blackY, blackSize, blackSize);
+
+      ctx.fillStyle = "black";
+      ctx.font = "50px Arial";
+      ctx.fillText("Score: " + score, 30, 70);
+    }
+
+    function gameLoop() {
+      if (gameOver) return;
+
+      ballY += ballSpeed;
+      blackY += blackSpeed;
+
+      if (ballY > canvas.height) resetBall();
+      if (blackY > canvas.height) resetBlackBall();
+
+      if (checkCollision()) {
+        console.log("You did it!");
+        score++;
+        resetBall();
+      }
+
+      if (checkBlackCollision()) {
+        gameOver = true;
+        document.getElementById('gameOverScreen').style.display = 'block';
+        return;
+      }
+
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    window.addEventListener('keydown', function(e) {
+      const speed = 20;
+      if (e.key === 'ArrowLeft') {
+        dogX = Math.max(0, dogX - speed);
+      } else if (e.key === 'ArrowRight') {
+        dogX = Math.min(canvas.width - dogWidth, dogX + speed);
+      }
+    });
+
+    function startGame() {
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('gameOverScreen').style.display = 'none';
+      gameOver = false;
+      score = 0;
+      resetBall();
+      resetBlackBall();
+      resizeCanvas();
+      gameLoop();
+    }
+
+    function restartGame() {
+      startGame();
+    }
+
+    bgImage.onload = () => {
+      resizeCanvas();
+      ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+      dogImage.onload = () => {
+        draw();
+      };
+    };
+  </script>
+</body>
+</html>
