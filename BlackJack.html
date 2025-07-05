@@ -3,6 +3,7 @@
 <head>
   <title>BlackJack Game</title>
   <style>
+    /* Reset margins and make canvas full-screen */
     html, body {
       margin: 0;
       padding: 0;
@@ -10,6 +11,7 @@
       overflow: hidden;
     }
 
+    /* Fullscreen background canvas */
     canvas {
       position: absolute;
       top: 0;
@@ -19,6 +21,7 @@
       z-index: -1;
     }
 
+    /* Centered content for menu screen */
     .content {
       position: absolute;
       top: 50%;
@@ -30,6 +33,7 @@
       text-shadow: 2px 2px 4px black;
     }
 
+    /* Style for buttons */
     button {
       margin-top: 20px;
       padding: 12px 24px;
@@ -41,6 +45,7 @@
       cursor: pointer;
     }
 
+    /* Game over popup style */
     #gameOverScreen {
       position: absolute;
       top: 50%;
@@ -55,6 +60,7 @@
       z-index: 10;
     }
 
+    /* Game over button style */
     #gameOverScreen button {
       margin-top: 20px;
       padding: 10px 20px;
@@ -68,14 +74,17 @@
   </style>
 </head>
 <body>
+  <!-- Canvas for rendering game -->
   <canvas id="gameCanvas"></canvas>
 
+  <!-- Start menu screen -->
   <div class="content" id="menu">
     <h1>Welcome to BlackJack Game!</h1>
     <p>Press start to help him catch his balls!</p>
     <button onclick="startGame()">Start Game</button>
   </div>
 
+  <!-- Game over screen -->
   <div id="gameOverScreen" style="display: none;">
     <h1>Game Over</h1>
     <p>Too bad... Yellow balls only!</p>
@@ -83,14 +92,17 @@
   </div>
 
   <script>
+    // Get canvas and context
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
+    // Dog properties
     const dogWidth = 100;
     const dogHeight = 100;
     let dogX = 100;
     let dogY = 0;
 
+    // Load game assets (images)
     const dogImage = new Image();
     dogImage.src = 'dog.png';
 
@@ -103,35 +115,42 @@
     const blackBallImage = new Image();
     blackBallImage.src = 'blackball.png';
 
+    // Tennis ball properties
     let ballX = 200;
     let ballY = -50;
     let ballSpeed = 2;
     const ballSize = 30;
 
+    // Black ball properties
     let blackX = 300;
     let blackY = -50;
     let blackSpeed = 2;
     const blackSize = 30;
 
+    // Game state
     let gameOver = false;
     let score = 0;
 
+    // Resize canvas and position dog near bottom
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       dogY = canvas.height - dogHeight - 100;
     }
 
+    // Reset tennis ball to top at random X
     function resetBall() {
       ballX = Math.random() * (canvas.width - ballSize);
       ballY = -ballSize;
     }
 
+    // Reset black ball to top at random X
     function resetBlackBall() {
       blackX = Math.random() * (canvas.width - blackSize);
       blackY = -blackSize;
     }
 
+    // Check collision with tennis ball
     function checkCollision() {
       return (
         ballX < dogX + dogWidth &&
@@ -141,6 +160,7 @@
       );
     }
 
+    // Check collision with black ball
     function checkBlackCollision() {
       return (
         blackX < dogX + dogWidth &&
@@ -150,6 +170,7 @@
       );
     }
 
+    // Draw game objects and score
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
@@ -162,33 +183,43 @@
       ctx.fillText("Score: " + score, 30, 70);
     }
 
+    // Main game loop
     function gameLoop() {
       if (gameOver) return;
 
+      // Move balls down
       ballY += ballSpeed;
       blackY += blackSpeed;
 
+      // Reset balls if they go off screen
       if (ballY > canvas.height) resetBall();
       if (blackY > canvas.height) resetBlackBall();
 
+      // Collision with tennis ball
       if (checkCollision()) {
         console.log("You did it!");
         score++;
         resetBall();
       }
 
+      // Collision with black ball ends game
       if (checkBlackCollision()) {
         gameOver = true;
         document.getElementById('gameOverScreen').style.display = 'block';
         return;
       }
 
+      // Redraw everything
       draw();
+
+      // Repeat next frame
       requestAnimationFrame(gameLoop);
     }
 
+    // Adjust canvas on window resize
     window.addEventListener('resize', resizeCanvas);
 
+    // Move dog with arrow keys
     window.addEventListener('keydown', function(e) {
       const speed = 20;
       if (e.key === 'ArrowLeft') {
@@ -198,6 +229,7 @@
       }
     });
 
+    // Start game (called when pressing Start Game)
     function startGame() {
       document.getElementById('menu').style.display = 'none';
       document.getElementById('gameOverScreen').style.display = 'none';
@@ -209,10 +241,12 @@
       gameLoop();
     }
 
+    // Restart game from Game Over screen
     function restartGame() {
       startGame();
     }
 
+    // Load background image first, then draw once ready
     bgImage.onload = () => {
       resizeCanvas();
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
